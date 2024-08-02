@@ -1,8 +1,8 @@
 from django.db import models
 import schedule
 
-# These models are designed to create an Emailing Automation sysyetm
 
+# These models are designed to create an Emailing Automation sysyetm
 # Below is the design of the models. Emails contain recipients (main, cc, bcc) subject, body, schedule, and attachments as well
 
 
@@ -15,12 +15,28 @@ class Email(models.Model):
     def __str__(self):
         return self.subject
 
+    def send_email(self):
+        from Email.utils import Mailer
+        recipients = {
+            "to": Recipient.objects.filter(email=self, type="TO"),
+            "cc": Recipient.objects.filter(email=self, type='CC'),
+            "bcc": Recipient.objects.filter(email=self, type='BCC')
+        }
+
+        attachments = Attachment.objects.filter(email=self)
+        attachment_files = [attachment.attachment for attachment in attachments]
+
+        if Mailer.send_email(recipients, self.subject, self.body, attachment_files):
+            EmailStatus.objects.create(email=self, status='success', message='Email sent successfully')
+        else:
+            EmailStatus.objects.create(email=self, status='failed', message='Email sending failed')
+
 
 class Recipient(models.Model):
     email = models.ForeignKey(Email, on_delete=models.CASCADE)
     recipient = models.EmailField()
     type = models.CharField(max_length=4, choices=[
-        ('main', 'main'),
+        ('TO', 'TO'),
         ('CC', 'CC'),
         ('BCC', 'BCC')
     ])
@@ -56,17 +72,55 @@ class Schedule(models.Model):
         ('quarterly', 'quarterly')
     ])
     time = models.TimeField()
-    day = models.CharField(max_length=10, null=True, blank=True)
+    day = models.CharField(max_length=10, null=True, blank=True, choices=(
+        ('monday', 'monday'),
+        ('tuesday', 'tuesday'),
+        ('wednesday', 'wednesday'),
+        ('thursday', 'thursday'),
+        ('friday', 'friday'),
+        ('saturday', 'saturday'),
+        ('sunday', 'sunday')
+
+    ))
     date = models.IntegerField(null=True, blank=True)
 
     @staticmethod
-    def create_schedule(email, schedule, time, day=None, date=None):
-        # Create a schedule for the email
-        # Use scehdule library to create a schedule for the emails
-        if schedule == 'daily':
-            schedule.every().day.at(time).do(email)
-        pass
+    def create_schedule(email, _schedule, time, day=None, date=None):
+        try:
+            s = Schedule()
+            s.email = email
+            s.schedule = _schedule
+            s.time = time
+            s.day = day
+            s.date = date
+            s.save()
+        except Exception as e:
+            raise e
 
+        # Create a schedule for the email
+        if _schedule == 'daily':
+            _schedule.every().day.at(time).do(email.send_email)
+        elif _schedule == 'weekly':
+            if day == 'monday':
+                _schedule.every().monday.at(time).do(email.send_email)
+            elif day == 'tuesday':
+                _schedule.every().tuesday.at(time).do(email.send_email)
+            elif day == 'wednesday':
+                _schedule.every().wednesday.at(time).do(email.send_email)
+            elif day == 'thursday':
+                _schedule.every().thursday.at(time).do(email.send_email)
+            elif day == 'friday':
+                _schedule.every().friday.at(time).do(email.send_email)
+            elif day == 'saturday':
+                _schedule.every().saturday.at(time).do(email.send_email)
+            elif day == 'sunday':
+                _schedule.every().sunday.at(time).do(email.send_email)
+        elif _schedule == 'monthly':
+            _schedule.every().month.at(date).do(email.send_email)
+        elif _schedule == 'quarterly':
+            _schedule.every(3).months.at(date).do(email.send_email)
+        else:
+            raise ValueError("Invalid schedule")
 
     def __str__(self):
         return str(self.date)
@@ -79,4 +133,3 @@ class EmailStatus(models.Model):
 
     def __str__(self):
         return self.status
-
