@@ -1,20 +1,20 @@
 
-/email
+/api/email
 
 gives mail CRUD
 
 
-/recipient
+/api/recipient
 
 gives recipient CRUD
 
 
-/attachment
+/api/attachment
 
 gives attachment CRUD
 
 
-/schedule-email
+/api/schedule-email
 
 to schedule email, use "daily", "weekly", "monthly" or "yearly" as the value of the "schedule" field
 time as "HH:MM" format
@@ -23,5 +23,5 @@ date as DD format
 use pk of the email created earlier as the value of the "email" field
     
 
-/scheduled-emails
+/api/scheduled-emails
 lists emails
