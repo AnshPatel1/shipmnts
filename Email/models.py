@@ -98,7 +98,7 @@ class Schedule(models.Model):
             raise e
 
         # Create a schedule for the email
-        schedule.every(5).seconds.do(email.send_email)
+        email.send_email()
         if _schedule == 'daily':
             schedule.every().day.at(time).do(email.send_email)
         elif _schedule == 'weekly':
