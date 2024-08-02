@@ -80,4 +80,3 @@ class EmailStatus(models.Model):
     def __str__(self):
         return self.status
 
-

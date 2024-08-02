@@ -9,18 +9,10 @@ DELETE /scheduled-emails/{id}: Endpoint to cancel a scheduled email.
 """
 
 
-class EmailSerializer(serializers.ModelSerializer):
+class AttachmentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Email
+        model = Attachment
         fields = '__all__'
-
-    def validate(self, data):
-        recipients = data.get('recipients')
-        cc = data.get('cc')
-        bcc = data.get('bcc')
-        if not recipients and not cc and not bcc:
-            raise serializers.ValidationError("At least one recipient is required.")
-        return data
 
 
 class RecipientSerializer(serializers.ModelSerializer):
@@ -28,24 +20,23 @@ class RecipientSerializer(serializers.ModelSerializer):
         model = Recipient
         fields = '__all__'
 
-    def validate(self, data):
-        email = data.get('email')
-        recipient = data.get('recipient')
-        if email.sender == recipient:
-            raise serializers.ValidationError("Sender cannot be a recipient.")
-        return data
+
+class EmailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Email
+        fields = '__all__'
+
+
+class RecipientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipient
+        fields = '__all__'
 
 
 class AttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attachment
         fields = '__all__'
-
-    def validate(self):
-        attachment = self.get('attachment')
-        if attachment.size > 1024 * 1024:
-            raise serializers.ValidationError("Attachment size cannot exceed 1MB.")
-        return attachment
 
 
 class ScheduleSerializer(serializers.ModelSerializer):

@@ -12,8 +12,10 @@ def get_router():
     """
 
     router = DefaultRouter()
+    router.register('email', EmailViewSet, basename='email')
+    router.register('recipient', RecipientViewSet, basename='recipient'),
+    router.register('attachment', AttachmentViewSet, basename='attachment')
     router.register('schedule-email', ScheduleEmailViewSet, basename='schedule-email')
-    router.register('scheduled-emails', ScheduledEmailViewSet, basename='scheduled-emails')
-
+    router.register('scheduled-emails', ScheduleEmailViewSet, basename='scheduled-emails')
 
     return router
