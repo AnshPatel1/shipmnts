@@ -98,27 +98,28 @@ class Schedule(models.Model):
             raise e
 
         # Create a schedule for the email
+        schedule.every(5).seconds.do(email.send_email)
         if _schedule == 'daily':
-            _schedule.every().day.at(time).do(email.send_email)
+            schedule.every().day.at(time).do(email.send_email)
         elif _schedule == 'weekly':
             if day == 'monday':
-                _schedule.every().monday.at(time).do(email.send_email)
+                schedule.every().monday.at(time).do(email.send_email)
             elif day == 'tuesday':
-                _schedule.every().tuesday.at(time).do(email.send_email)
+                schedule.every().tuesday.at(time).do(email.send_email)
             elif day == 'wednesday':
-                _schedule.every().wednesday.at(time).do(email.send_email)
+                schedule.every().wednesday.at(time).do(email.send_email)
             elif day == 'thursday':
-                _schedule.every().thursday.at(time).do(email.send_email)
+                schedule.every().thursday.at(time).do(email.send_email)
             elif day == 'friday':
-                _schedule.every().friday.at(time).do(email.send_email)
+                schedule.every().friday.at(time).do(email.send_email)
             elif day == 'saturday':
-                _schedule.every().saturday.at(time).do(email.send_email)
+                schedule.every().saturday.at(time).do(email.send_email)
             elif day == 'sunday':
-                _schedule.every().sunday.at(time).do(email.send_email)
+                schedule.every().sunday.at(time).do(email.send_email)
         elif _schedule == 'monthly':
-            _schedule.every().month.at(date).do(email.send_email)
+            schedule.every(30).days.at(date).do(email.send_email)
         elif _schedule == 'quarterly':
-            _schedule.every(3).months.at(date).do(email.send_email)
+            schedule.every(3*30).days.at(date).do(email.send_email)
         else:
             raise ValueError("Invalid schedule")
 

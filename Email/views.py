@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import *
@@ -58,7 +59,12 @@ class ScheduleEmailViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        Schedule.create_schedule(serializer.validated_data)
+        validated_data = serializer.validated_data
+        print(validated_data)
+        from datetime import time
+        Schedule.create_schedule(validated_data['email'], validated_data['schedule'], validated_data['time'].strftime("%H:%M"),
+                                 validated_data['day'],
+                                 validated_data['date'])
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -140,3 +146,10 @@ class AttachmentViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_email(request):
+    email_id = request.data.get('email_id')
+    email = Email.objects.get(id=email_id)
+    email.send_email()
+    return Response({"message": "Email sent successfully."})
